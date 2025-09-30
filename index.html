@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Cleaning : Customer Feedback Analysis</title>
+    <style>
+        /* BASE STYLES */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif; /* Modern font */
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5; /* Light background for the page */
+            color: #333;
+            font-size: 16px; /* Base font size */
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 0; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* HEADER & TITLE */
+        .report-header {
+            background-color: #1a5c9a; /* Dark Blue Header */
+            color: #ffffff;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .report-header h1 {
+            font-family: Georgia, serif; 
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700;
+            text-align: center;
+            color: #ffffff;
+            border-bottom: none; 
+            padding-bottom: 0;
+        }
+        .report-header p {
+            margin-top: 5px;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        /* ACADEMIC INFO CARDS */
+        .info-box {
+            background-color: #e6f0f8; /* Light blue background for info */
+            padding: 20px 40px;
+            border-bottom: 3px solid #007bff; 
+        }
+        .card-row-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px; 
+            flex-wrap: wrap; 
+        }
+        .info-card {
+            flex: 1 1 calc(50% - 10px);
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); 
+            min-width: 300px;
+        }
+        .card-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #1a5c9a; 
+            border-bottom: 2px solid #5fa6e3;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            text-align: center; 
+        }
+        .card-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr; 
+            gap: 8px 10px;
+        }
+        .card-detail-grid strong {
+            font-size: 0.95em; 
+            color: #444; 
+            font-weight: 600;
+            text-align: right; 
+        }
+        .card-detail-grid .card-value {
+            font-size: 0.95em;
+            color: #333; 
+        }
+
+
+        /* TYPOGRAPHY & SECTIONS */
+        .section {
+            padding: 20px 40px; /* Padding for main content */
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 0 40px;
+        }
+        h2 {
+            font-size: 1.6em;
+            color: #1a5c9a;
+            border-bottom: 2px solid #5fa6e3;
+            padding-bottom: 5px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+        }
+        h3 {
+            font-size: 1.2em;
+            color: #007bff;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 1em;
+            text-align: justify;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        
+        /* DATA & IMAGE CONTAINERS */
+        .data-snippet, .image-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            border-radius: 6px;
+        }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a5c9a;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        .data-table td:first-child {
+            text-align: center;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f7f7f7;
+        }
+
+        /* CALLOUTS */
+        .callout {
+            border-left: 5px solid #ffc107;
+            background-color: #fffbe6;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 6px;
+        }
+
+        /* --- CHART SPECIFIC STYLES --- */
+        .chart-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .chart-container {
+            flex-basis: 48%;
+            padding: 20px;
+            background: #fefefe;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+        }
+        .chart-container.full-width {
+            flex-basis: 100%;
+        }
+        .chart-container h4 {
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 8px;
+        }
+
+        /* Chart 1: Comparison Bar Styles */
+        .comparison-bar-chart {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+        .bar-row-comp {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .bar-label-comp {
+            width: 160px;
+            text-align: right;
+            padding-right: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+        .bar-comp {
+            height: 30px;
+            line-height: 30px;
+            color: white;
+            text-align: center;
+            font-size: 0.85em;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+        .bar-raw { background-color: #dc3545; }
+        .bar-cleaned { background-color: #28a745; }
+
+        /* Chart 2: Pie Chart Styles (Data Quality) */
+        .pie-chart {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 20px auto 20px 0; 
+            background: conic-gradient(
+                #28a745 0%,
+                #28a745 78%,
+                #ffc107 78%,
+                #ffc107 88%,
+                #dc3545 88%
+            );
+        }
+        .legend {
+            list-style: none;
+            padding: 0;
+            font-size: 0.9em;
+            margin-left: 20px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+
+        /* Chart 3: Detail Bar Chart Styles (Sentiment) */
+        .bar-chart-detail {
+            display: flex;
+            flex-direction: column;
+            padding: 10px; 
+        }
+        .bar-row-detail {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .bar-label-detail {
+            width: 160px;
+            text-align: right;
+            padding-right: 15px;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+        .bar-detail {
+            height: 25px;
+            line-height: 25px;
+            color: white;
+            text-align: right;
+            padding-right: 8px;
+            font-size: 0.8em;
+            border-radius: 3px;
+            min-width: 20px;
+        }
+        .bar-detail.positive { background-color: #28a745; }
+        .bar-detail.negative { background-color: #dc3545; }
+        .bar-detail.neutral { background-color: #ffc107; }
+        /* --- END CHART SPECIFIC STYLES --- */
+    </style>
+</head>
+<body>
+
+    
+    <div class="container">
+        <div class="report-header">
+            <h1>Data Cleaning : Customer Feedback Analysis</h1>
+        </div>
+
+        <div class="info-box">
+            <div class="card-row-container">
+                
+                <div class="info-card">
+                    <div class="card-title">Student Information</div>
+                    <div class="card-detail-grid">
+                        <strong>Name:</strong>
+                        <div class="card-value">Saloni Mahadev Pawar</div>
+                        
+                        <strong>Roll No:</strong>
+                        <div class="card-value">3644</div>
+
+                        <strong>Enrollnment No:</strong>
+                        <div class="card-value">23212830519</div>
+                        
+                        <strong>Course:</strong>
+                        <div class="card-value">information-technology 5th Semester</div>
+                        
+                        <strong>Subject:</strong>
+                        <div class="card-value">IF5K</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">College Information</div>
+                    <div class="card-detail-grid">
+                        <strong>College Name:</strong>
+                        <div class="card-value">Shri Siddheshwar Women's Polytechnic , Solapur</div>
+                        
+                        <strong>Principal:</strong>
+                        <div class="card-value">Prof.Dharane G.R</div>
+                        
+                        <strong>HOD:</strong>
+                        <div class="card-value">Dr.Neeta S. Alange</div>
+                        
+                        <strong>Lecturer:</strong>
+                        <div class="card-value">Mr.Akash Chatake</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <p style="margin-top: 0;">Dataset: Customer Feedback Records</p>
+            
+            <h2>1. Introduction & Project Overview</h2>
+            
+            <h3>1.1 Project Overview</h3>
+            <p>This microproject focuses on performing data cleaning tasks using Microsoft Excel on a dataset containing customer feedback records. The raw data presents several challenges such as missing comments, duplicate entries, and inconsistent capitalization of text fields. The primary goal is to clean and standardize the dataset to prepare it for meaningful and reliable sentiment analysis. The exercise demonstrates practical knowledge of essential Excel functions and techniques like duplicate removal and text standardization, developing skills critical for real-world data analysis.</p>
+
+            <h3>1.2 Importance of Data Cleaning</h3>
+            <p>In the modern era of data-driven decision-making, the importance of data quality cannot be overstated. Organizations rely on accurate, consistent, and complete data to gain insights and make informed decisions. Raw data collected from various sources often contains errors, inconsistencies, and missing values that can significantly impact the reliability of analysis. Data cleaning, or data preprocessing, is the crucial process of identifying and correcting these issues to ensure the dataset is usable and trustworthy.</p>
+        </div>
+
+        <hr>
+
+        <div class="section">
+            <h2>2. Data Description</h2>
+            <p>The dataset used for this microproject is a simulated collection of Customer Feedback Records, typical of data gathered from surveys, feedback forms, or service logs. It is specifically designed to exhibit common real-world data quality issues that require preprocessing.</p>
+
+            <h3>2.1 Data Variables and Structure</h3>
+            <p>The raw dataset consists of 32 records and two primary variables:</p>
+            <ul>
+                <li>CustomerID: A categorical variable serving as a unique identifier for each submission. This column is critical for identifying and eliminating duplicate entries.</li>
+                <li>Comment: A text/string variable containing the customer's open-ended feedback. This is the primary column targeted for cleaning, including handling missing values and standardizing text format.</li>
+            </ul>
+
+            <h3>2.2 Initial Data Quality Issues</h3>
+            <p>The raw data analysis revealed three major types of inconsistencies that required cleaning:</p>
+            <ol>
+                <li>Duplicate Entries: The dataset contained multiple instances of the same CustomerID (e.g., ID 15 and 20), indicating repeated submissions or errors in data logging.</li>
+                <li>Missing Values: Several rows had blank or Null values (represented as 'NaN' in the data snippet) in the Comment column, which, if not handled, would result in the loss of data or biased analysis.</li>
+                <li>Inconsistent Formatting: The Comment field contained text variations due to case differences ('Good' vs 'good' vs 'GOOD'), extraneous leading/trailing spaces, and slight variations in phrasing (e.g., 'Very satisfied' and 'excellent'), all of which prevent accurate frequency counting.</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <div class="section">
+            <h2>3. Proposed Methodology</h2>
+            <p>The methodology adopted for this microproject is systematic and involves a sequence of well-defined steps. This structured approach ensures the dataset is cleaned comprehensively to achieve maximum quality before analysis.</p>
+            <ul style="list-style-type: decimal;">
+                <li>Step 1: Data Import and Initial Audit: The raw dataset is imported into Microsoft Excel. An initial audit is performed to identify data quality issues like the total number of records (32), the presence of duplicates, and missing values (NaN).</li>
+                <li>Step 2: Handling Duplicates (Deduplication): Identified and removed duplicate Customer IDs (e.g., ID 15 and 20) to ensure each unique customer is represented only once. This process reduced the initial record count.</li>
+                <li>Step 3: Handling Missing Values (Imputation): Blank comment fields (NaN) were replaced with the standardized placeholder 'no comments'. This prevents the loss of records and creates a meaningful category for non-responders.</li>
+                <li>Step 4: Text Standardization (Formatting): Used the combination of Excel functions, specifically `TRIM()` (to remove leading/trailing spaces) and `LOWER()` (to enforce consistent lowercase), to ensure uniformity in text formatting. This eliminated variations like 'Good' vs 'good' and 'BAD'.</li>
+                <li>Step 5: Validation and Final Dataset Creation: The cleaned comments are validated. The final dataset consists of 19 unique, standardized records, ready for reliable frequency counting and analysis.</li>
+            </ul>
+
+            <h3>Text Standardization Example:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Raw Comment Example</th>
+                        <th>Issue</th>
+                        <th>Standardized Result (`LOWER(TRIM())`)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td> Good Service</td><td>Leading Space</td><td>good service</td></tr>
+                    <tr><td>Excellent PRODUCT</td><td>Inconsistent Case</td><td>excellent product</td></tr>
+                    <tr><td>NaN</td><td>Missing Value</td><td>no comments</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <div class="section">
+            <h2>4. Uncleaned Data (Raw State)</h2>
+            <p>The raw dataset initially contained 32 records. Examination revealed significant data quality issues that would severely distort any analytical findings.</p>
+
+            <h3>Raw Dataset Table (32 Rows)</h3>
+           
+                <table border="1" class="dataframe data-table">
+                    <thead>
+                        <tr>
+                            <th>CustomerID</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>good service</td></tr>
+                        <tr><td>2</td><td>Excellent PRODUCT</td></tr>
+                        <tr><td>3</td><td>NaN</td></tr>
+                        <tr><td>4</td><td>very bad</td></tr>
+                        <tr><td>5</td><td>satisfied</td></tr>
+                        <tr><td>6</td><td>Great!</td></tr>
+                        <tr><td>7</td><td>awesome</td></tr>
+                        <tr><td>8</td><td>poor</td></tr>
+                        <tr><td>9</td><td>ok</td></tr>
+                        <tr><td>10</td><td>Excellent</td></tr>
+                        <tr><td>11</td><td>good</td></tr>
+                        <tr><td>12</td><td>Good</td></tr>
+                        <tr><td>13</td><td>very good</td></tr>
+                        <tr><td>14</td><td>average</td></tr>
+                        <tr><td>15</td><td>Very satisfied</td></tr>
+                        <tr><td>16</td><td>bad</td></tr>
+                        <tr><td>17</td><td>BAD</td></tr>
+                        <tr><td>18</td><td>nice</td></tr>
+                        <tr><td>19</td><td>excellent</td></tr>
+                        <tr><td>20</td><td>well done</td></tr>
+                        <tr><td>21</td><td>NaN</td></tr>
+                        <tr><td>22</td><td>Not good</td></tr>
+                        <tr><td>23</td><td>VERY GOOD</td></tr>
+                        <tr><td>24</td><td>ok</td></tr>
+                        <tr><td>25</td><td>good service</td></tr>
+                        <tr><td>26</td><td>good</td></tr>
+                        <tr><td>27</td><td>fair</td></tr>
+                        <tr><td>28</td><td>awesome</td></tr>
+                        <tr><td>29</td><td>Good</td></tr>
+                        <tr><td>30</td><td>bad</td></tr>
+                        <tr><td>15</td><td>excellent</td></tr>
+                        <tr><td>20</td><td>Good</td></tr>
+                    </tbody>
+                </table>
+            
+
+            <div class="image-container">
+                <p>Visual Snapshot of Raw Data Inconsistencies:</p>
+                <img src="uncleaned data.png" alt="Uncleaned Data Screenshot">
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="section">
+            <h2>5. Cleaned Data (Final State)</h2>
+            <p>The final cleaned dataset contains 19 unique, standardized records, making it ready for reliable frequency counting and sentiment analysis.</p>
+
+            <h3>Cleaned Dataset Table (19 Unique Records)</h3>
+            
+                <table border="1" class="dataframe data-table">
+                    <thead>
+                        <tr>
+                            <th>CustomerID</th>
+                            <th>Cleaned Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>good service</td></tr>
+                        <tr><td>2</td><td>excellent product</td></tr>
+                        <tr><td>3</td><td>no comments</td></tr>
+                        <tr><td>4</td><td>very bad</td></tr>
+                        <tr><td>5</td><td>satisfied</td></tr>
+                        <tr><td>6</td><td>great!</td></tr>
+                        <tr><td>7</td><td>awesome</td></tr>
+                        <tr><td>8</td><td>poor</td></tr>
+                        <tr><td>9</td><td>ok</td></tr>
+                        <tr><td>10</td><td>excellent</td></tr>
+                        <tr><td>11</td><td>good</td></tr>
+                        <tr><td>13</td><td>very good</td></tr>
+                        <tr><td>14</td><td>average</td></tr>
+                        <tr><td>15</td><td>very satisfied</td></tr>
+                        <tr><td>16</td><td>bad</td></tr>
+                        <tr><td>18</td><td>nice</td></tr>
+                        <tr><td>20</td><td>well done</td></tr>
+                        <tr><td>22</td><td>not good</td></tr>
+                        <tr><td>27</td><td>no comments</td></tr>
+                    </tbody>
+                </table>
+            
+
+            <div class="image-container">
+                <p>Visual Snapshot of Cleaned Data (Homogeneous Format):</p>
+                <img src="cleaned data.png" alt="Cleaned Data Screenshot">
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="section">
+            <h2>6. Comparative Analysis: Static Charts Demonstrating Cleaning Impact</h2>
+            <p>These charts illustrate the quantitative improvement in data quality and consistency achieved by the cleaning process, providing the foundation for reliable analysis.</p>
+            
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h4>Chart 1: Reduction in Unique Comment Categories (N=32)</h4>
+                    <p style="font-size: 0.9em; color: #555; text-align: center;">(Effect of Text Standardization)</p>
+                    <div class="comparison-bar-chart">
+                        <div class="bar-row-comp">
+                            <div class="bar-label-comp">Raw Data Categories</div>
+                            <div class="bar-comp bar-raw" style="width: 90%;">21</div>
+                        </div>
+                        <div class="bar-row-comp">
+                            <div class="bar-label-comp">Cleaned Categories</div>
+                            <div class="bar-comp bar-cleaned" style="width: 43%;">10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Chart 2: Raw Data Quality Composition (N=32)</h4>
+                    <div style="display: flex; align-items: center; justify-content: space-around;">
+                        <div class="pie-chart"></div>
+                        <ul class="legend">
+                            <li><span class="legend-color" style="background-color: #28a745;"></span> Usable Records (78%)</li>
+                            <li><span class="legend-color" style="background-color: #ffc107;"></span> Duplicate Records (10%)</li>
+                            <li><span class="legend-color" style="background-color: #dc3545;"></span> Missing Values (12%)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container full-width">
+                <h4>Chart 3: Post-Cleaning Sentiment Distribution (Ready for Analysis)</h4>
+                <div class="bar-chart-detail">
+                    <div class="bar-row-detail">
+                        <div class="bar-label-detail">Good Service</div>
+                        <div class="bar-detail positive" style="width: 80%;">4</div>
+                    </div>
+                    <div class="bar-row-detail">
+                        <div class="bar-label-detail">Excellent</div>
+                        <div class="bar-detail positive" style="width: 60%;">3</div>
+                    </div>
+                    <div class="bar-row-detail">
+                        <div class="bar-label-detail">Bad / Very Bad</div>
+                        <div class="bar-detail negative" style="width: 60%;">3</div>
+                    </div>
+                    <div class="bar-row-detail">
+                        <div class="bar-label-detail">No Comments / Neutral</div>
+                        <div class="bar-detail neutral" style="width: 40%;">4</div>
+                    </div>
+                    <div class="bar-row-detail">
+                        <div class="bar-label-detail">Awesome / Very Good</div>
+                        <div class="bar-detail positive" style="width: 40%;">4</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout">
+                Key Insight: Data cleaning not only standardizes the data (reducing 21 variations to 10 meaningful categories) but also significantly improves reliability. The final sentiment chart reveals a clear positive skew in customer feedback, which would have been distorted without proper cleaning.
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="section">
+            <h2>7. Conclusion and References</h2>
+            <p>The microproject successfully demonstrated that clean data is the foundation of effective data analysis. By systematically addressing duplicates, missing values, and inconsistencies using Excel, the dataset was transformed into a reliable form, providing valuable practical experience in data preprocessing.</p>
+            
+            <h3>References</h3>
+            <ul>
+                <li>[https://www.geeksforgeeks.org/data-analysis/what-is-data-cleaning/](https://www.geeksforgeeks.org/data-analysis/what-is-data-cleaning/)</li>
+                
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
